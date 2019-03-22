@@ -43,7 +43,7 @@ class MyGame(arcade.Window):
             while self.maze[y][x] == 1:
                 y = randint(0, len(self.maze)-1)
                 x = randint(0, len(self.maze[0])-1)
-            self.agents.append(Gosth(x, y, self.size_block // 4, self.size_block))
+            self.agents.append(Gosth(x, y, self.size_block // 4, self.size_block, self.maze))
             #self.agents.push(Gosth(x + (self.size_block // 2), y + (self.size_block // 2), self.size_block // 4)
     
     def drow_maze(self):
@@ -86,15 +86,17 @@ class MyGame(arcade.Window):
             if i.x == self.player.x and i.y == self.player.y:
                 self.state = State.GAME_OVER
                 break
-            if ((i.x - self.player.x)**2 + (i.y - self.player.y)**2 )**(1/2) < 15 and i.state != AgentState.STALk:
+            elif ((i.x - self.player.x)**2 + (i.y - self.player.y)**2 )**(1/2) < 15 and i.state != AgentState.STALk:
                 i.state = AgentState.STALk
                 i.target = (self.player.x, self.player.y)
-                i.trajecoty = i.getPath(self.maze)
+                i.trajecoty = i.getPath()
             else :
                 i.state = AgentState.SEARCH
+
             i.time += delta_time
+            
             if i.time >= 0.75:
-                if i.move(self.maze):
+                if i.move():
                     i.time = 0
         for i in range(len(self.coins)):
             if self.coins[i].x == self.player.x and self.coins[i].y == self.player.y:
