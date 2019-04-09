@@ -54,7 +54,7 @@ class MyGame(arcade.Window):
         for i in range(len(self.maze)):
             for j in range(len(self.maze[0])):
                 if self.maze[i][j] == 1:
-                    arcade.draw_point(j*self.size_block, i*self.size_block, arcade.color.BLUE, self.size_block*2)
+                    arcade.draw_point(j*self.size_block, i*self.size_block, arcade.color.BLUE, self.size_block)
 
     def on_draw(self):
         """
