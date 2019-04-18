@@ -14,7 +14,7 @@ class MyGame(arcade.Window):
 
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
-        self.size_block = 25
+        self.size_block = 20
         self.maze = make_maze(width//(self.size_block*3), height//(self.size_block*2))
         self.agents = []
         self.coins = []
