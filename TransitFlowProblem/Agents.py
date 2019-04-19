@@ -37,4 +37,12 @@ class ImaginaryCity:
         if "L" in self.city[y][x]: roads.append((x-1, y))
         return roads
 
-#class Car()
+class Car:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def update(self, x, y):
+        self.x = x
+        self.y = y
+    def getPosition(self, x, y):
+        return (self.x, self.y)
