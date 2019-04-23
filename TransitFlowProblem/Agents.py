@@ -122,7 +122,7 @@ class AmbienteCity:
 
     def step(self):
         finished = True
-        for i in self.city.agents:
+        for i in self.agents:
             if not i.arrive:
                 finished = False
                 if i.locate == i.end:
@@ -133,12 +133,13 @@ class AmbienteCity:
                     j = i.nextStep(self.city.getValidMoves(*i.locate))
                     if self.city.logicCity[j[1]][j[0]] != 0:
                         print("Colision on ", *j)
-                    else :
+                    else:
                         if self.city.semoforyCity[j[1]][j[0]]:
-                            if self.city.semoforyCity[j[1]][j[0].conf[self.city.city[i.locate[0]][i.locate[1]]]:
+                            if self.city.semoforyCity[j[1]][j[0]].conf[self.city.city[i.locate[0]][i.locate[1]]]:
                                 i.locate = j
                             else:
-                               print("Closed Semafory on ", *j)
+                                print("Closed Semafory on ", *j)
+                            
         return finished
 
 
@@ -149,7 +150,7 @@ class AmbienteCity:
             print(time())
             if (time() - t) > self.stepTime:
                 t = time
-                self.step += 1
+                self.steps += 1
                 if self.step(): break
 
 
