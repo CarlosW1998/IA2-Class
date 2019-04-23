@@ -113,11 +113,13 @@ class TrafficLight:
     def __int__(self): return 1
 
 class AmbienteCity:
-    def __init__(self, stepTime=0.5, agents = 20):
+    def __init__(self, stepTime=0.001, agents = 20, log=True):
         self.city = ImaginaryCity()
         self.stepTime = stepTime
         self.steps = 1
         self.agents = [getRandomCarState(self.city.logicCity) for i in range(agents)]
+        self.colisions = 0
+        self.log = log
 
     def executeStep(self):
         finished = True
@@ -132,7 +134,8 @@ class AmbienteCity:
                 if self.steps%i.time == 0 and i.timeStart <= self.steps:
                     j = i.nextStep(self.city.getValidMoves(*i.locate))
                     if j in [a.locate for a in self.agents]:
-                        print("Colision on ", *i.locate, " to", *j)
+                        if self.log: print("Colision on ", *i.locate, " to", *j, end = ' | ')
+                        self.colisions += 1
                     else:
                         s = get(self.city.semafory, j)
                         if s:
@@ -141,7 +144,7 @@ class AmbienteCity:
                                 i.locate = j
                                 self.city.logicCity[i.locate[0]][i.locate[1]] = 5
                             else:
-                                print("Semafory Colision on ", *i.locate)
+                                if self.log: print("Semafory Colision on ", *i.locate, end = ' ')                                
                         else:
                             self.city.logicCity[i.locate[0]][i.locate[1]] = 0
                             i.locate = j
@@ -157,12 +160,15 @@ class AmbienteCity:
         t = time()
         while True:
             if (time() - t) > self.stepTime:
-                print("Step ",self.steps, ": ")
-                self.city.getState()
-                print(t)
+                if self.log: print("Step ",self.steps, ": ", end = ' ')
+                #self.city.getState()
                 t = time()
                 self.steps += 1
-                if self.executeStep(): break
+                if self.executeStep(): 
+                    if self.log: print()
+                    break
+                if self.log: print()
+        print("Colision: ", self.colisions)
 
 
 

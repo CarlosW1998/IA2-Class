@@ -1,7 +1,7 @@
 from Agents import AmbienteCity
 
-myCity = AmbienteCity()
-myCity.city.getState()
+myCity = AmbienteCity(log=False)
+#myCity.city.getState()
 myCity.execute()
 #myCity = ImaginaryCity()
 #myCity.getState()
