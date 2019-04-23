@@ -1,11 +1,11 @@
 from random import choice, randint
 from time import time
+import os
 
 class ImaginaryCity:
     def __init__(self):
         self.city = [[' ' for i in range(19)] for j in range(19)]
         self.logicCity = [[1 for i in range(19)] for j in range(19)]
-        self.semoforyCity = [[False for i in range(19)] for j in range(19)]
         self.semafory = []
         for i in range(19):
             for j in range(19):
@@ -34,7 +34,8 @@ class ImaginaryCity:
         for i in range(19):
             for j in range(19):
                 if len(self.city[i][j]) > 1:
-                    self.semoforyCity[i][j] = TrafficLight((i, j), self.city[i][j][0], self.city[i][j][1], randint(0, 10))
+                    self.semafory.append(TrafficLight((i, j), self.city[i][j][0], self.city[i][j][1], randint(1, 10)))
+
 
         self.city[0][0] = 'D'
         self.city[18][18] = 'U'
@@ -45,29 +46,29 @@ class ImaginaryCity:
         
 
     def getState(self):
-        for i in self.city:
-            for j in i:
-                print('%3s' % (j), end = '')
-            print()
-        print()
+        #for i in self.city:
+        #    for j in i:
+        #        print('%3s' % (j), end = '')
+        #    print()
+        #print()
         for i in self.logicCity:
             for j in i:
                 print('%3d' % (j), end = '')
             print()
         print()
-        for i in self.semoforyCity:
-            for j in i:
-                print('%3d' % (j), end = '')
-            print()
+        #for i in self.semoforyCity:
+        #    for j in i:
+        #        print('%3d' % (j), end = '')
+        #    print()
 
-    def getValidMoves(self, x, y):
+    def getValidMoves(self, y, x):
         if x >= 19 or x < 0: return None
         if y >= 19 or y < 0: return None
         roads = []
-        if "U" in self.city[y][x]: roads.append((x, y-1))
-        if "D" in self.city[y][x]: roads.append((x, y+1))
-        if "R" in self.city[y][x]: roads.append((x+1, y))
-        if "L" in self.city[y][x]: roads.append((x-1, y))
+        if "U" in self.city[y][x]: roads.append((y-1, x))
+        if "D" in self.city[y][x]: roads.append((y+1, x))
+        if "R" in self.city[y][x]: roads.append((y, x+1))
+        if "L" in self.city[y][x]: roads.append((y, x-1))
         return roads
 
 class Car:
@@ -80,7 +81,7 @@ class Car:
         self.timeStart = timeToStart
         
     def update(self, y, x):
-        self.locate = (x, y)
+        self.locate = (y, x)
 
     def nextStep(self, possibilites):
         return choice(possibilites)
@@ -99,7 +100,7 @@ class TrafficLight:
         self.steps = steps
     
     def changeMode(self, step):
-        if step%self.step == 0:
+        if step%self.steps == 0:
             if self.conf[self.d1] == False:
                 self.conf[self.d1] = True
                 self.conf[self.d2] = False
@@ -111,34 +112,42 @@ class TrafficLight:
     def __bool__(self): return True
     def __int__(self): return 1
 
-
-
 class AmbienteCity:
-    def __init__(self, stepTime=0.07, agents = 20):
+    def __init__(self, stepTime=0.5, agents = 20):
         self.city = ImaginaryCity()
         self.stepTime = stepTime
-        self.steps = 0
+        self.steps = 1
         self.agents = [getRandomCarState(self.city.logicCity) for i in range(agents)]
 
-    def step(self):
+    def executeStep(self):
         finished = True
         for i in self.agents:
             if not i.arrive:
                 finished = False
                 if i.locate == i.end:
-                    i.arrive = True
                     self.city.logicCity[i.locate[0]][i.locate[1]] = 0
+                    i.arrive = True
+                    i.locate = (1000, 1000)
                     continue
-                if self.steps%i.time == 0 and i.timeStart <= step:
+                if self.steps%i.time == 0 and i.timeStart <= self.steps:
                     j = i.nextStep(self.city.getValidMoves(*i.locate))
-                    if self.city.logicCity[j[1]][j[0]] != 0:
-                        print("Colision on ", *j)
+                    if j in [a.locate for a in self.agents]:
+                        print("Colision on ", *i.locate, " to", *j)
                     else:
-                        if self.city.semoforyCity[j[1]][j[0]]:
-                            if self.city.semoforyCity[j[1]][j[0]].conf[self.city.city[i.locate[0]][i.locate[1]]]:
+                        s = get(self.city.semafory, j)
+                        if s:
+                            if s.conf[self.city.city[i.locate[0]][i.locate[1]]]:
+                                self.city.logicCity[i.locate[0]][i.locate[1]] = 0
                                 i.locate = j
+                                self.city.logicCity[i.locate[0]][i.locate[1]] = 5
                             else:
-                                print("Closed Semafory on ", *j)
+                                print("Semafory Colision on ", *i.locate)
+                        else:
+                            self.city.logicCity[i.locate[0]][i.locate[1]] = 0
+                            i.locate = j
+                            self.city.logicCity[i.locate[0]][i.locate[1]] = 5
+        for i in self.city.semafory:
+            i.changeMode(self.steps)
                             
         return finished
 
@@ -147,15 +156,16 @@ class AmbienteCity:
     def execute(self):
         t = time()
         while True:
-            print(time())
             if (time() - t) > self.stepTime:
-                t = time
+                print("Step ",self.steps, ": ")
+                self.city.getState()
+                print(t)
+                t = time()
                 self.steps += 1
-                if self.step(): break
+                if self.executeStep(): break
 
 
 
-        
 
 def getRandomCarState(city):
     x, y = randint(0, 18), randint(0, 18)
@@ -165,5 +175,11 @@ def getRandomCarState(city):
     x, y = randint(0, 18), randint(0, 18)
     while city[y][x] == 1:x, y = randint(0, 18), randint(0, 18)
     end = (y, x)
-    step = 3
-    return Car(start, end, step, randint(0, 50))
+    step = 1
+    return Car(start, end, step, randint(0, 5))
+
+def get(sem, p):
+    for i in sem:
+        if i.position == p: return i
+
+    return None
