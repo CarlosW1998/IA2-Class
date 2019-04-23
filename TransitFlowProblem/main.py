@@ -1,6 +1,9 @@
 from Agents import *
 
-myCity = ImaginaryCity()
-myCity.getState()
+myCity = AmbienteCity()
+myCity.city.getState()
+myCity.execute()
+#myCity = ImaginaryCity()
+#myCity.getState()
 
-print(myCity.getValidMoves(0, 6))
+#print(myCity.getValidMoves(0, 6))
