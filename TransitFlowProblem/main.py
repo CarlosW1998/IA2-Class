@@ -1,4 +1,4 @@
-from Agents import *
+from Agents import AmbienteCity
 
 myCity = AmbienteCity()
 myCity.city.getState()

@@ -34,8 +34,7 @@ class ImaginaryCity:
         for i in range(19):
             for j in range(19):
                 if len(self.city[i][j]) > 1:
-                    self.semafory.append(TrafficLight((j, i), self.city[i][j][0], self.city[i][j][1], randint(0, 10)))
-                    self.semoforyCity[i][j] = True
+                    self.semoforyCity[i][j] = TrafficLight((i, j), self.city[i][j][0], self.city[i][j][1], randint(0, 10))
 
         self.city[0][0] = 'D'
         self.city[18][18] = 'U'
@@ -72,25 +71,28 @@ class ImaginaryCity:
         return roads
 
 class Car:
-    def __init__(self, start, end, time):
+    def __init__(self, start, end, time,timeToStart):
         self.start = start
         self.end = end
         self.time = time
         self.locate = start
+        self.arrive = False
+        self.timeStart = timeToStart
         
-    def update(self, x, y):
+    def update(self, y, x):
         self.locate = (x, y)
 
     def nextStep(self, possibilites):
         return choice(possibilites)
 
-    def getPosition(self, x, y):
-        return (self.x, self.y)
+    def getPosition(self, y, x):
+        return self.locate
 
 class TrafficLight:
     def __init__(self, position, d1, d2, steps):
-        self.p1 = False
-        self.p2 = True
+        self.conf = {}
+        self.conf[d1] = False
+        self.conf[d2] = True
         self.d1 = d1
         self. d2 = d2
         self.position = position
@@ -98,8 +100,16 @@ class TrafficLight:
     
     def changeMode(self, step):
         if step%self.step == 0:
-            self.p1 = True
-            self.p2 = False
+            if self.conf[self.d1] == False:
+                self.conf[self.d1] = True
+                self.conf[self.d2] = False
+            else:
+                self.conf[self.d1] = False
+                self.conf[self.d2] = True
+
+    
+    def __bool__(self): return True
+    def __int__(self): return 1
 
 
 
@@ -110,7 +120,28 @@ class AmbienteCity:
         self.steps = 0
         self.agents = [getRandomCarState(self.city.logicCity) for i in range(agents)]
 
-    def step(self): pass
+    def step(self):
+        finished = True
+        for i in self.city.agents:
+            if not i.arrive:
+                finished = False
+                if i.locate == i.end:
+                    i.arrive = True
+                    self.city.logicCity[i.locate[0]][i.locate[1]] = 0
+                    continue
+                if self.steps%i.time == 0 and i.timeStart <= step:
+                    j = i.nextStep(self.city.getValidMoves(*i.locate))
+                    if self.city.logicCity[j[1]][j[0]] != 0:
+                        print("Colision on ", *j)
+                    else :
+                        if self.city.semoforyCity[j[1]][j[0]]:
+                            if self.city.semoforyCity[j[1]][j[0].conf[self.city.city[i.locate[0]][i.locate[1]]]:
+                                i.locate = j
+                            else:
+                               print("Closed Semafory on ", *j)
+        return finished
+
+
 
     def execute(self):
         t = time()
@@ -118,7 +149,8 @@ class AmbienteCity:
             print(time())
             if (time() - t) > self.stepTime:
                 t = time
-                if self.step() == None: break
+                self.step += 1
+                if self.step(): break
 
 
 
@@ -128,9 +160,9 @@ def getRandomCarState(city):
     x, y = randint(0, 18), randint(0, 18)
     while city[y][x] != 0:x, y = randint(0, 18), randint(0, 18)
     city[y][x] = 5
-    start = (x, y)
+    start = (y, x)
     x, y = randint(0, 18), randint(0, 18)
     while city[y][x] == 1:x, y = randint(0, 18), randint(0, 18)
-    end = (x, y)
-    step = randint(0, 10)
-    return Car(start, end, step)
+    end = (y, x)
+    step = 3
+    return Car(start, end, step, randint(0, 50))
