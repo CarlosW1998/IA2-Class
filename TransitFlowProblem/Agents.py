@@ -83,6 +83,9 @@ class Car:
     def update(self, y, x):
         self.locate = (y, x)
 
+    def copy(self):
+        return Car(self.start, self.end, self.time, self.timeStart)
+
     def nextStep(self, possibilites):
         return choice(possibilites)
 
@@ -113,11 +116,29 @@ class TrafficLight:
     def __int__(self): return 1
 
 class AmbienteCity:
-    def __init__(self, stepTime=0.001, agents = 20, log=True):
+    def __init__(self, stepTime=0.001, agents = 20, log=False, preAgents=None):
         self.city = ImaginaryCity()
         self.stepTime = stepTime
         self.steps = 1
-        self.agents = [getRandomCarState(self.city.logicCity) for i in range(agents)]
+        self.agents = []
+        if preAgents:
+            for i in preAgents:
+                self.agents.append(i)
+                self.city.logicCity[i.locate[0]][i.locate[1]] = 5
+        else: self.agents = [getRandomCarState(self.city.logicCity) for i in range(agents)]
+        self.colisions = 0
+        self.log = log
+
+    def reset(self, stepTime=0.001, agents = 20, log=False, preAgents=None ):
+        self.city = ImaginaryCity()
+        self.stepTime = stepTime
+        self.steps = 1
+        self.agents = []
+        if preAgents:
+            for i in preAgents:
+                self.agents.append(i)
+                self.city.logicCity[i.locate[0]][i.locate[1]] = 5
+        else: self.agents = [getRandomCarState(self.city.logicCity) for i in range(agents)]
         self.colisions = 0
         self.log = log
 
@@ -168,7 +189,8 @@ class AmbienteCity:
                     if self.log: print()
                     break
                 if self.log: print()
-        print("Colision: ", self.colisions)
+        if self.log: print("Colision: ", self.colisions)
+        return self.colisions
 
 
 
